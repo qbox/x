@@ -30,9 +30,8 @@ func TestErrorsInfo(t *testing.T) {
 	err := errors.New("detail error")
 	err = MysqlError(err, "TestErrorsInfo failed")
 	msg := Detail(err)
-	if msg != ` ==> github.com/qiniu/errors/error_info_test.go:31: invalid argument ~ TestErrorsInfo failed
+	if msg != ` ==> github.com/qiniu/errors/error_info_test.go:25: invalid argument ~ TestErrorsInfo failed
  ==> detail error` {
-		t.Fatal("TestErrorsInfo failed")
+		t.Fatal("TestErrorsInfo failed:", msg)
 	}
 }
-

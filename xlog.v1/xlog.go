@@ -109,8 +109,8 @@ func NewWithReq(req *http.Request) *Logger {
 	return &Logger{h, reqId}
 }
 
-// Born a logger with:
-// 	1. provided req id (if @a is reqIder)
+// NewWith creates a logger with:
+// 	1. provided req id (if @a is string or reqIder)
 // 	2. provided header (if @a is header)
 //	3. **DUMMY** trace recorder (if @a cannot record)
 //
@@ -144,7 +144,7 @@ func NewWith(a interface{}) *Logger {
 	return &Logger{h, reqId}
 }
 
-// Born a logger with:
+// NewDummy creates a logger with:
 // 	1. new random req id
 //	2. **DUMMY** trace recorder (will not record anything)
 //
