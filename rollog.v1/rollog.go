@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"syscall"
 
-	"github.com/qiniu/errors"
+	"qiniupkg.com/x/errors.v7"
 )
 
 const DefaultChunkBits = 26
