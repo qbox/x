@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -10,9 +11,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/qiniu/xlog.v1"
-
-	. "golang.org/x/net/context"
+	"qiniupkg.com/x/reqid.v7"
 )
 
 var (
@@ -61,7 +60,7 @@ func newRequest(method, url1 string, body io.Reader) (req *http.Request, err err
 	return
 }
 
-func (r Client) DoRequest(ctx Context, method, url string) (resp *http.Response, err error) {
+func (r Client) DoRequest(ctx context.Context, method, url string) (resp *http.Response, err error) {
 
 	req, err := newRequest(method, url, nil)
 	if err != nil {
@@ -71,7 +70,7 @@ func (r Client) DoRequest(ctx Context, method, url string) (resp *http.Response,
 }
 
 func (r Client) DoRequestWith(
-	ctx Context, method, url1 string,
+	ctx context.Context, method, url1 string,
 	bodyType string, body io.Reader, bodyLength int) (resp *http.Response, err error) {
 
 	req, err := newRequest(method, url1, body)
@@ -84,7 +83,7 @@ func (r Client) DoRequestWith(
 }
 
 func (r Client) DoRequestWith64(
-	ctx Context, method, url1 string,
+	ctx context.Context, method, url1 string,
 	bodyType string, body io.Reader, bodyLength int64) (resp *http.Response, err error) {
 
 	req, err := newRequest(method, url1, body)
@@ -97,7 +96,7 @@ func (r Client) DoRequestWith64(
 }
 
 func (r Client) DoRequestWithForm(
-	ctx Context, method, url1 string, data map[string][]string) (resp *http.Response, err error) {
+	ctx context.Context, method, url1 string, data map[string][]string) (resp *http.Response, err error) {
 
 	msg := url.Values(data).Encode()
 	if method == "GET" || method == "HEAD" || method == "DELETE" {
@@ -113,7 +112,7 @@ func (r Client) DoRequestWithForm(
 }
 
 func (r Client) DoRequestWithJson(
-	ctx Context, method, url1 string, data interface{}) (resp *http.Response, err error) {
+	ctx context.Context, method, url1 string, data interface{}) (resp *http.Response, err error) {
 
 	msg, err := json.Marshal(data)
 	if err != nil {
@@ -123,14 +122,15 @@ func (r Client) DoRequestWithJson(
 		ctx, method, url1, "application/json", bytes.NewReader(msg), len(msg))
 }
 
-func (r Client) Do(ctx Context, req *http.Request) (resp *http.Response, err error) {
+func (r Client) Do(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
 
 	if ctx == nil {
-		ctx = Background()
+		ctx = context.Background()
 	}
 
-	xl := xlog.FromContextSafe(ctx)
-	req.Header.Set("X-Reqid", xl.ReqId())
+	if reqid, ok := reqid.FromContext(ctx); ok {
+		req.Header.Set("X-Reqid", reqid)
+	}
 
 	if _, ok := req.Header["User-Agent"]; !ok {
 		req.Header.Set("User-Agent", UserAgent)
@@ -243,7 +243,7 @@ func ResponseError(resp *http.Response) (err error) {
 	return e
 }
 
-func CallRet(ctx Context, ret interface{}, resp *http.Response) (err error) {
+func CallRet(ctx context.Context, ret interface{}, resp *http.Response) (err error) {
 
 	defer func() {
 		io.Copy(ioutil.Discard, resp.Body)
@@ -265,7 +265,7 @@ func CallRet(ctx Context, ret interface{}, resp *http.Response) (err error) {
 }
 
 func (r Client) CallWithForm(
-	ctx Context, ret interface{}, method, url1 string, param map[string][]string) (err error) {
+	ctx context.Context, ret interface{}, method, url1 string, param map[string][]string) (err error) {
 
 	resp, err := r.DoRequestWithForm(ctx, method, url1, param)
 	if err != nil {
@@ -275,7 +275,7 @@ func (r Client) CallWithForm(
 }
 
 func (r Client) CallWithJson(
-	ctx Context, ret interface{}, method, url1 string, param interface{}) (err error) {
+	ctx context.Context, ret interface{}, method, url1 string, param interface{}) (err error) {
 
 	resp, err := r.DoRequestWithJson(ctx, method, url1, param)
 	if err != nil {
@@ -285,7 +285,7 @@ func (r Client) CallWithJson(
 }
 
 func (r Client) CallWith(
-	ctx Context, ret interface{}, method, url1, bodyType string, body io.Reader, bodyLength int) (err error) {
+	ctx context.Context, ret interface{}, method, url1, bodyType string, body io.Reader, bodyLength int) (err error) {
 
 	resp, err := r.DoRequestWith(ctx, method, url1, bodyType, body, bodyLength)
 	if err != nil {
@@ -295,7 +295,7 @@ func (r Client) CallWith(
 }
 
 func (r Client) CallWith64(
-	ctx Context, ret interface{}, method, url1, bodyType string, body io.Reader, bodyLength int64) (err error) {
+	ctx context.Context, ret interface{}, method, url1, bodyType string, body io.Reader, bodyLength int64) (err error) {
 
 	resp, err := r.DoRequestWith64(ctx, method, url1, bodyType, body, bodyLength)
 	if err != nil {
@@ -305,7 +305,7 @@ func (r Client) CallWith64(
 }
 
 func (r Client) Call(
-	ctx Context, ret interface{}, method, url1 string) (err error) {
+	ctx context.Context, ret interface{}, method, url1 string) (err error) {
 
 	resp, err := r.DoRequestWith(ctx, method, url1, "application/x-www-form-urlencoded", nil, 0)
 	if err != nil {

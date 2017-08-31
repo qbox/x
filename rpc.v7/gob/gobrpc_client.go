@@ -2,6 +2,7 @@ package gob
 
 import (
 	"bytes"
+	"context"
 	"encoding/gob"
 	"io"
 	"io/ioutil"
@@ -9,8 +10,6 @@ import (
 	"strconv"
 
 	"qiniupkg.com/x/rpc.v7"
-
-	. "golang.org/x/net/context"
 )
 
 // ---------------------------------------------------------------------------
@@ -46,7 +45,7 @@ func ResponseError(resp *http.Response) (err error) {
 	return e
 }
 
-func CallRet(ctx Context, ret interface{}, resp *http.Response) (err error) {
+func CallRet(ctx context.Context, ret interface{}, resp *http.Response) (err error) {
 
 	defer func() {
 		io.Copy(ioutil.Discard, resp.Body)
@@ -78,7 +77,7 @@ var (
 )
 
 func (r Client) Call(
-	ctx Context, ret interface{}, method, url1 string) (err error) {
+	ctx context.Context, ret interface{}, method, url1 string) (err error) {
 
 	resp, err := r.DoRequestWith(ctx, method, url1, "application/gob", nil, 0)
 	if err != nil {
@@ -88,7 +87,7 @@ func (r Client) Call(
 }
 
 func (r Client) CallWithGob(
-	ctx Context, ret interface{}, method, url1 string, params interface{}) (err error) {
+	ctx context.Context, ret interface{}, method, url1 string, params interface{}) (err error) {
 
 	var b bytes.Buffer
 	err = gob.NewEncoder(&b).Encode(params)
@@ -104,4 +103,3 @@ func (r Client) CallWithGob(
 }
 
 // ---------------------------------------------------------------------------
-

@@ -1,19 +1,18 @@
 package reqid
 
 import (
-	"encoding/binary"
+	"context"
 	"encoding/base64"
+	"encoding/binary"
 	"net/http"
 	"time"
-
-	. "golang.org/x/net/context"
 )
 
 // --------------------------------------------------------------------
 
 var pid = uint32(time.Now().UnixNano() % 4294967291)
 
-func genReqId() string {
+func genReqID() string {
 	var b [12]byte
 	binary.LittleEndian.PutUint32(b[:], pid)
 	binary.LittleEndian.PutUint64(b[4:], uint64(time.Now().UnixNano()))
@@ -28,25 +27,30 @@ const (
 	reqidKey key = 0
 )
 
-func NewContext(ctx Context, reqid string) Context {
-	return WithValue(ctx, reqidKey, reqid)
+// NewContext creates a new context with a reqid.
+//
+func NewContext(ctx context.Context, reqid string) context.Context {
+	return context.WithValue(ctx, reqidKey, reqid)
 }
 
-func NewContextWith(ctx Context, w http.ResponseWriter, req *http.Request) Context {
+// NewContextWith creates a new context which gets reqid from a req.Header object.
+//
+func NewContextWith(ctx context.Context, w http.ResponseWriter, req *http.Request) context.Context {
 	reqid := req.Header.Get("X-Reqid")
 	if reqid == "" {
-		reqid = genReqId()
+		reqid = genReqID()
 		req.Header.Set("X-Reqid", reqid)
 	}
 	h := w.Header()
 	h.Set("X-Reqid", reqid)
-	return WithValue(ctx, reqidKey, reqid)
+	return context.WithValue(ctx, reqidKey, reqid)
 }
 
-func FromContext(ctx Context) (reqid string, ok bool) {
+// FromContext gets reqid from ctx.
+//
+func FromContext(ctx context.Context) (reqid string, ok bool) {
 	reqid, ok = ctx.Value(reqidKey).(string)
 	return
 }
 
 // --------------------------------------------------------------------
-

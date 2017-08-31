@@ -1,6 +1,7 @@
 package xlog
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -8,8 +9,6 @@ import (
 
 	"qiniupkg.com/x/log.v7"
 	"qiniupkg.com/x/reqid.v7"
-
-	. "golang.org/x/net/context"
 )
 
 const (
@@ -45,7 +44,7 @@ func New(reqId string) *Logger {
 	return &Logger{reqId}
 }
 
-func NewWith(ctx Context) *Logger {
+func NewWith(ctx context.Context) *Logger {
 
 	reqId, ok := reqid.FromContext(ctx)
 	if !ok {
