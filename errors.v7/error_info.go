@@ -77,22 +77,6 @@ func shortFile(file string) string {
 	return file
 }
 
-func Info(err error, cmd ...interface{}) *ErrorInfo {
-	pc, _, _, ok := runtime.Caller(1)
-	if !ok {
-		pc = 0
-	}
-	return &ErrorInfo{cmd: cmd, err: Err(err), pc: pc}
-}
-
-func InfoEx(calldepth int, err error, cmd ...interface{}) *ErrorInfo {
-	pc, _, _, ok := runtime.Caller(calldepth + 1)
-	if !ok {
-		pc = 0
-	}
-	return &ErrorInfo{cmd: cmd, err: Err(err), pc: pc}
-}
-
 func (r *ErrorInfo) Detail(err error) *ErrorInfo {
 	r.why = err
 	return r
