@@ -1,5 +1,4 @@
-// +build go1.9
-// +build !go1.10
+// +build go1.10
 
 package errors
 
@@ -14,7 +13,7 @@ func Info(err error, cmd ...interface{}) *ErrorInfo {
 }
 
 func InfoEx(calldepth int, err error, cmd ...interface{}) *ErrorInfo {
-	pc, _, _, ok := runtime.Caller(calldepth + 1)
+	pc, _, _, ok := runtime.Caller(calldepth)
 	if !ok {
 		pc = 0
 	}

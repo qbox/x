@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,16 +12,6 @@ import (
 // --------------------------------------------------------------------
 
 func TestNewRequest(t *testing.T) {
-
-	if runtime.Version() < "go1.8" {
-		req, err := http.NewRequest("GET", "-H\t abc.com \thttp://127.0.0.1/foo/bar", nil)
-		if err != nil {
-			t.Fatal("http.NewRequest failed")
-		}
-		if req.Host != "" {
-			t.Fatal(`http.NewRequest: req.Host != ""`)
-		}
-	}
 
 	req, err := newRequest("GET", "-H\t abc.com \thttp://127.0.0.1/foo/bar", nil)
 	if err != nil {
